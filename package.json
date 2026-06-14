@@ -12,10 +12,12 @@
     "appId": "org.xiaor.shopping",
     "productName": "XiaoR-Shopping",
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "assets/icon.ico"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "assets/icon.png"
     },
     "publish": null
   },
