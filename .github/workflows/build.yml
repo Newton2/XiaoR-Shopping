@@ -6,19 +6,19 @@ on:
       - 'v*'
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - name: Configure git
-        run: |
-          git config --global core.longpaths true
-          git config --global core.autocrlf false
+      - name: Configure git longpaths
+        run: git config --global core.longpaths true
 
       - uses: actions/checkout@v4
+
+      - name: Show repo files
+        run: |
+          echo "=== Repo files ==="
+          Get-ChildItem -Recurse -Name | Where-Object { $_ -notlike "*node_modules*" }
 
       - uses: actions/setup-node@v4
         with:
@@ -27,10 +27,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Show package.json build config
+        run: type package.json
+
       - name: Build Windows installer
-        run: npx electron-builder --win nsis --x64
+        run: npx electron-builder --win nsis --x64 --publish never
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: electron-builder
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
