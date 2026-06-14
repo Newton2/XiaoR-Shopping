@@ -10,8 +10,8 @@ let currentUser = null;  // { phone, name }
 // ==================== 创建登录窗口 ====================
 function createLoginWindow() {
   mainWindow = new BrowserWindow({
-    width: 420,
-    height: 600,
+    width: 400,
+    height: 520,
     resizable: false,
     title: 'XiaoR-Shopping',
     webPreferences: {
