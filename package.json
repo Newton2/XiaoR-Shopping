@@ -16,10 +16,16 @@
     },
     "mac": {
       "target": "dmg"
-    }
+    },
+    "publish": null
   },
   "devDependencies": {
     "electron": "^28.3.3",
     "electron-builder": "^24.13.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Newton2/XiaoR-Shopping.git"
+  },
+  "author": "XiaoR"
 }
