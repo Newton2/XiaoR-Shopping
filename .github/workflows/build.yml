@@ -1,0 +1,57 @@
+name: Build XiaoR-Shopping
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows installer
+        run: npx electron-builder --win nsis --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: XiaoR-Shopping-Windows
+          path: dist/*.exe
+          retention-days: 30
+
+  release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: XiaoR-Shopping-Windows
+          path: ./dist
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./dist/*.exe
+          name: XiaoR-Shopping ${{ github.ref_name }}
+          body: |
+            ## XiaoR-Shopping ${{ github.ref_name }}
+
+            ### 安装方法
+            1. 下载 `XiaoR-Shopping Setup.exe`
+            2. 双击运行，一键安装
+            3. 打开应用，用小R小程序扫码登录
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,28 @@
+{
+  "name": "xiaor-shopping",
+  "version": "1.0.0",
+  "description": "XiaoR-Shopping - Save Money on Every Purchase",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "org.xiaor.shopping",
+    "productName": "XiaoR-Shopping",
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3",
+    "electron-packager": "^17.1.2"
+  }
+}

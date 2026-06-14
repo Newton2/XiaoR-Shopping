@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>XiaoR-Shopping</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, 'PingFang SC', sans-serif;
+  background: linear-gradient(160deg, #fff7ed 0%, #fff 60%);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 30px 24px;
+}
+.logo { font-size: 52px; margin-bottom: 8px; }
+.title { font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+.subtitle { font-size: 13px; color: #94a3b8; margin-bottom: 32px; }
+.card {
+  background: #fff; border-radius: 20px; padding: 28px 24px;
+  width: 100%; max-width: 320px; text-align: center;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.qr-wrap {
+  width: 180px; height: 180px; margin: 0 auto 16px;
+  border: 2px solid #f1f5f9; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fafafa; overflow: hidden;
+}
+#qrcode canvas, #qrcode img { border-radius: 8px; }
+.hint { font-size: 13px; color: #64748b; margin-bottom: 6px; font-weight: 600; }
+.hint2 { font-size: 11px; color: #94a3b8; line-height: 1.6; }
+.status {
+  margin-top: 14px; padding: 10px 16px;
+  border-radius: 10px; font-size: 13px; font-weight: 700;
+  background: #f8fafc; color: #64748b;
+}
+.status.waiting { background: #fff7ed; color: #c2410c; }
+.status.success { background: #f0fdf4; color: #16a34a; }
+.refresh-btn {
+  margin-top: 12px; padding: 8px 20px;
+  background: none; border: 1.5px solid #e2e8f0;
+  border-radius: 8px; font-size: 12px; color: #94a3b8;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="logo">🛍️</div>
+<div class="title">XiaoR-Shopping</div>
+<div class="subtitle">帮您省钱，轻松代购</div>
+
+<div class="card">
+  <div class="qr-wrap">
+    <div id="qrcode"></div>
+  </div>
+  <div class="hint">📱 用小R小程序扫码登录</div>
+  <div class="hint2">打开小R钱包 → 我的快递 → 点击扫码图标</div>
+  <div class="status waiting" id="status">⏳ 等待扫码...</div>
+  <button class="refresh-btn" onclick="init()">🔄 刷新二维码</button>
+</div>
+
+<script>
+const API_BASE = 'https://api.rcnh-global.org/api/v1/taobao';
+let sessionId = null;
+let pollTimer = null;
+
+async function init() {
+  document.getElementById('status').textContent = '⏳ 生成二维码...';
+  document.getElementById('status').className = 'status waiting';
+  document.getElementById('qrcode').innerHTML = '';
+  if (pollTimer) clearInterval(pollTimer);
+
+  try {
+    const r = await fetch(API_BASE + '/scan-login/create', { method: 'POST' });
+    const d = await r.json();
+    sessionId = d.session_id;
+
+    // 生成二维码
+    new QRCode(document.getElementById('qrcode'), {
+      text: d.qr_data,
+      width: 160, height: 160,
+      colorDark: '#1e293b', colorLight: '#fff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    document.getElementById('status').textContent = '⏳ 等待扫码登录...';
+    startPolling();
+  } catch(e) {
+    document.getElementById('status').textContent = '❌ 网络错误，请重试';
+    document.getElementById('status').className = 'status';
+  }
+}
+
+function startPolling() {
+  pollTimer = setInterval(async () => {
+    if (!sessionId) return;
+    try {
+      const r = await fetch(`${API_BASE}/scan-login/status?session_id=${sessionId}`);
+      const d = await r.json();
+      if (d.status === 'confirmed') {
+        clearInterval(pollTimer);
+        document.getElementById('status').textContent = `✅ ${d.name || d.phone} 登录成功！`;
+        document.getElementById('status').className = 'status success';
+        setTimeout(() => {
+          window.xiaorAPI.openTaobao({ phone: d.phone, name: d.name });
+        }, 800);
+      } else if (d.status === 'expired') {
+        clearInterval(pollTimer);
+        document.getElementById('status').textContent = '⏰ 二维码已过期，请刷新';
+        document.getElementById('status').className = 'status';
+      }
+    } catch(e) {}
+  }, 2000);
+}
+
+// 启动
+init();
+</script>
+</body>
+</html>

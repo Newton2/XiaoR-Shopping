@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>XiaoR-Shopping</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, 'PingFang SC', sans-serif; background:#f8fafc; }
+
+/* 顶部状态栏 */
+#topbar {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff; padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; font-weight: 700;
+}
+#user-info { font-size: 12px; opacity: 0.9; }
+
+/* 提示横幅 */
+#taobao-tip {
+  background: #fff7ed; border-bottom: 1px solid #fed7aa;
+  padding: 10px 16px; font-size: 12px; color: #92400e;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* 淘宝WebView容器 */
+#taobao-container {
+  width: 100%; height: calc(100vh - 88px);
+  border: none; display: block;
+}
+
+/* 省钱按钮 */
+#save-btn {
+  position: fixed; right: 16px; bottom: 30px; z-index: 9999;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff; border: none; border-radius: 28px;
+  padding: 14px 20px; font-size: 14px; font-weight: 800;
+  cursor: pointer; box-shadow: 0 4px 16px rgba(249,115,22,0.5);
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span>🛍️ XiaoR-Shopping</span>
+  <span id="user-info">加载中...</span>
+</div>
+
+<div id="taobao-tip">
+  💡 请登录您的淘宝账号，然后浏览「我的足迹」点击「帮我省钱」
+</div>
+
+<webview
+  id="taobao-container"
+  src="https://m.taobao.com"
+  useragent="Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
+  allowpopups
+></webview>
+
+<button id="save-btn" onclick="triggerSaveMoney()">💰 帮我省钱</button>
+
+<script>
+let currentUser = null;
+
+// 接收用户信息
+window.xiaorAPI.onUserInfo((user) => {
+  currentUser = user;
+  document.getElementById('user-info').textContent =
+    (user.name || user.phone) + ' 已登录';
+});
+
+// 监听淘宝页面跳转，判断是否在足迹页显示按钮
+const wv = document.getElementById('taobao-container');
+
+wv.addEventListener('did-navigate', (e) => {
+  const url = e.url || '';
+  const showBtn = url.includes('footMark') || url.includes('footmark');
+  document.getElementById('save-btn').style.display = showBtn ? 'block' : 'none';
+
+  // 注入用户信息到淘宝页面
+  if (currentUser) {
+    wv.executeJavaScript(`window.__XIAOR_PHONE__ = '${currentUser.phone}';`);
+  }
+});
+
+wv.addEventListener('did-navigate-in-page', (e) => {
+  const url = e.url || '';
+  const showBtn = url.includes('footMark') || url.includes('footmark');
+  document.getElementById('save-btn').style.display = showBtn ? 'block' : 'none';
+});
+
+// 触发省钱分析（注入并执行油猴脚本逻辑）
+function triggerSaveMoney() {
+  if (!currentUser) { alert('请先登录小R账户'); return; }
+
+  // 先注入用户信息
+  wv.executeJavaScript(`window.__XIAOR_PHONE__ = '${currentUser.phone}';`);
+
+  // 触发页面上的帮我省钱按钮（如果油猴已注入）
+  wv.executeJavaScript(`
+    const btn = document.getElementById('xiaor-save-btn');
+    if (btn) { btn.click(); }
+    else { alert('请先安装小R油猴脚本'); }
+  `);
+}
+</script>
+</body>
+</html>
