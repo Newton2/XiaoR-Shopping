@@ -17,7 +17,8 @@ function createLoginWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      webviewTag: true
     }
   });
   mainWindow.loadFile('login.html');
@@ -38,7 +39,8 @@ function createMainWindow(user) {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      webviewTag: true
     }
   });
   mainWindow.setMenuBarVisibility(false);

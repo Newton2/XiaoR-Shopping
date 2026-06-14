@@ -12,17 +12,14 @@
     "appId": "org.xiaor.shopping",
     "productName": "XiaoR-Shopping",
     "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico"
+      "target": "nsis"
     },
     "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.icns"
+      "target": "dmg"
     }
   },
   "devDependencies": {
     "electron": "^28.3.3",
-    "electron-builder": "^24.13.3",
-    "electron-packager": "^17.1.2"
+    "electron-builder": "^24.13.3"
   }
 }
