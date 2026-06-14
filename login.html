@@ -60,6 +60,7 @@ body {
   <div class="hint2">打开小R钱包 → 我的快递 → 点击扫码图标</div>
   <div class="status waiting" id="status">⏳ 等待扫码...</div>
   <button class="refresh-btn" onclick="init()">🔄 刷新二维码</button>
+  <div id="poll-count" style="font-size:10px;color:#cbd5e1;margin-top:6px;"></div>
 </div>
 
 <script>
@@ -112,8 +113,11 @@ function startPolling() {
         document.getElementById('status').className = 'status';
       }
     } catch(e) {
-      document.getElementById('status').textContent = '⚠️ 网络错误: ' + e.message;
+      document.getElementById('status').textContent = '⚠️ 错误: ' + e.message;
     }
+    // 显示轮询次数，确认轮询在运行
+    const cnt = (window._pollCount = (window._pollCount||0) + 1);
+    document.getElementById('poll-count').textContent = '轮询次数: ' + cnt;
   }, 2000);
 }
 
