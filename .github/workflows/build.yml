@@ -25,16 +25,17 @@ jobs:
       - name: Build Windows installer
         run: npx electron-builder --win nsis --x64 --publish never
 
-      - name: List dist folder
+      - name: Rename installer
         run: |
-          echo "=== dist folder contents ==="
-          Get-ChildItem -Path dist -Recurse | Select-Object FullName
+          $file = Get-ChildItem -Path dist -Filter "*.exe" | Where-Object { $_.Name -like "*Setup*" } | Select-Object -First 1
+          if ($file) {
+            Rename-Item $file.FullName "dist\XiaoR-Shopping-Setup.exe"
+            echo "Renamed to XiaoR-Shopping-Setup.exe"
+          }
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
           name: XiaoR-Shopping-Windows
-          path: |
-            dist/*.exe
-            dist/**/*.exe
-          if-no-files-found: warn
+          path: dist/XiaoR-Shopping-Setup.exe
+          if-no-files-found: error
