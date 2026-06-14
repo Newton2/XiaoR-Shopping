@@ -11,8 +11,9 @@ let currentUser = null;  // { phone, name }
 function createLoginWindow() {
   mainWindow = new BrowserWindow({
     width: 400,
-    height: 520,
+    height: 500,
     resizable: false,
+    autoHideMenuBar: true,
     title: 'XiaoR-Shopping',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -51,6 +52,21 @@ function createMainWindow(user) {
     mainWindow.webContents.send('user-info', user);
   });
 }
+
+// ==================== IPC: 扫码登录（主进程发HTTP，绕过CORS）====================
+ipcMain.handle('create-scan-login', async () => {
+  try {
+    const r = await fetch(`${API_BASE}/api/v1/taobao/scan-login/create`, { method: 'POST' });
+    return await r.json();
+  } catch(e) { return { success: false, message: e.message }; }
+});
+
+ipcMain.handle('poll-scan-login', async (event, sessionId) => {
+  try {
+    const r = await fetch(`${API_BASE}/api/v1/taobao/scan-login/status?session_id=${sessionId}`);
+    return await r.json();
+  } catch(e) { return { status: 'error', message: e.message }; }
+});
 
 // ==================== IPC: 登录验证 ====================
 ipcMain.handle('verify-phone', async (event, phone) => {

@@ -63,7 +63,6 @@ body {
 </div>
 
 <script>
-const API_BASE = 'https://api.rcnh-global.org/api/v1/taobao';
 let sessionId = null;
 let pollTimer = null;
 
@@ -74,8 +73,8 @@ async function init() {
   if (pollTimer) clearInterval(pollTimer);
 
   try {
-    const r = await fetch(API_BASE + '/scan-login/create', { method: 'POST' });
-    const d = await r.json();
+    // ⭐ 用主进程IPC发请求，绕过CORS
+    const d = await window.xiaorAPI.createScanLogin();
     sessionId = d.session_id;
 
     // 生成二维码
@@ -98,8 +97,8 @@ function startPolling() {
   pollTimer = setInterval(async () => {
     if (!sessionId) return;
     try {
-      const r = await fetch(`${API_BASE}/scan-login/status?session_id=${sessionId}`);
-      const d = await r.json();
+      // ⭐ 用主进程IPC轮询，绕过CORS
+      const d = await window.xiaorAPI.pollScanLogin(sessionId);
       if (d.status === 'confirmed') {
         clearInterval(pollTimer);
         document.getElementById('status').textContent = `✅ ${d.name || d.phone} 登录成功！`;
